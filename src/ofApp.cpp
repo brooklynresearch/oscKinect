@@ -6,14 +6,14 @@ void ofApp::setup(){
     
     // number of Kinect devices; used to create array
     kinect.numTotalDevices();
+    kinect.listDevices();
     
     // enable depth->video image calibration
     kinect.setRegistration(true);
     
 //    kinect.init();
     //kinect.init(true); // shows infrared instead of RGB video image
-    kinect.init(false, false); // disable video image (faster fps)
-    
+    kinect.init(false, false); // disable video image (faster fps)      
     kinect.open();		// opens first available kinect
     //kinect.open(1);	// open a kinect by id, starting with 0 (sorted by serial # lexicographically))
     //kinect.open("A00362A08602047A");	// open a kinect using it's unique serial #
@@ -107,13 +107,13 @@ void ofApp::draw() {
     } else {
         // draw from the live kinect
         kinect.drawDepth(10, 10, 400, 300);
-        //		kinect.draw(420, 10, 400, 300);
+        //kinect.draw(420, 10, 400, 300);
         
-        		grayImage.draw(10, 320, 400, 300);
-        //		contourFinder.draw(10, 320, 400, 300);
+        grayImage.draw(10, 320, 400, 300);
+        contourFinder.draw(10, 320, 400, 300);
         
 //#ifdef USE_TWO_KINECTS
-        //		kinect2.draw(420, 320, 400, 300);
+        //kinect2.draw(420, 320, 400, 300);
         kinect2.drawDepth(420, 320, 400, 300);
 //#endif
     }
@@ -177,9 +177,8 @@ void ofApp::exit() {
     kinect.setCameraTiltAngle(0); // zero the tilt on exit
     kinect.close();
     
-#ifdef USE_TWO_KINECTS
+
     kinect2.close();
-#endif
 }
 
 //--------------------------------------------------------------
