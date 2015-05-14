@@ -10,6 +10,9 @@ class ofApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
+        void exit();
+        
+        void drawPointCloud();
 
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -23,6 +26,8 @@ class ofApp : public ofBaseApp{
     
         ofxKinect kinect;
         ofxKinect kinect2;
+        ofxKinect *kinects;
+        int nKinects;
     
         ofxCvColorImage colorImg;
         
