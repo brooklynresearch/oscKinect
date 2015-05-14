@@ -26,8 +26,9 @@ class ofApp : public ofBaseApp{
     
         ofxKinect kinect;
         ofxKinect kinect2;
-        ofxKinect *kinects;
+        ofxKinect** kinects;
         int nKinects;
+        int currentKinect;
     
         ofxCvColorImage colorImg;
         
@@ -36,15 +37,44 @@ class ofApp : public ofBaseApp{
         ofxCvGrayscaleImage grayThreshFar; // the far thresholded image
         
         ofxCvContourFinder contourFinder;
-        
+    
+    
         bool bThreshWithOpenCV;
         bool bDrawPointCloud;
         
         int nearThreshold;
         int farThreshold;
-        
+    
+        int blobMinSize;
+        int blobMaxSize;
+        int maxBlobs;
+    
         int angle;
+    
+        // second Kinect stuff
+        ofxCvColorImage colorImg2;
         
+        ofxCvGrayscaleImage grayImage2; // grayscale depth image
+        ofxCvGrayscaleImage grayThreshNear2; // the near thresholded image
+        ofxCvGrayscaleImage grayThreshFar2; // the far thresholded image
+        
+        ofxCvContourFinder contourFinder2;
+    
+        bool bThreshWithOpenCV2;
+        bool bDrawPointCloud2;
+        
+        int nearThreshold2;
+        int farThreshold2;
+    
+        int blobMinSize2;
+        int blobMaxSize2;
+        int maxBlobs2;
+        
+    
+        int angle2;
+        
+    
+    
         // used for viewing the point cloud
         ofEasyCam easyCam;
 		
