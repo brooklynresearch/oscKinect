@@ -44,14 +44,22 @@ void ofApp::setup(){
     
     nearThreshold = 180;
     farThreshold = 70;
-    bThreshWithOpenCV = true;
+    bThreshWithOpenCV = false;
     
     blobMinSize = 400;
     blobMaxSize = 8000;
     maxBlobs = 2;
     
+    botCrop = 120;
+    topCrop = 120;
+    leftCrop = 100;
+    rightCrop = 200;
+    
     // zero the tilt on startup
     angle = 0;
+    
+    // load up parameters for first kinect
+    loadParameters(0);
     kinect.setCameraTiltAngle(angle);
     
     // start from the front
@@ -76,14 +84,22 @@ void ofApp::setup(){
     
     nearThreshold2 = 180;
     farThreshold2 = 70;
-    bThreshWithOpenCV2 = true;
+    bThreshWithOpenCV2 = false;
     
     blobMinSize2 = 400;
     blobMaxSize2 = 8000;
     maxBlobs2 = 5;
     
+    botCrop2 = 120;
+    topCrop2 = 120;
+    leftCrop2 = 100;
+    rightCrop2 = 200;
+    
     // zero the tilt on startup
     angle2 = 0;
+    
+    // load up parameters for second kinect
+    loadParameters(1);
     kinect2.setCameraTiltAngle(angle2);
     
     // start from the front
@@ -120,7 +136,26 @@ void ofApp::update(){
             int numPixels = grayImage.getWidth() * grayImage.getHeight();
             for(int i = 0; i < numPixels; i++) {
                 if(pix[i] < nearThreshold && pix[i] > farThreshold) {
-                    pix[i] = 255;
+                    // bottom crop factor
+                    if(i > (kinect.height - botCrop)*grayImage.width){
+                      pix[i] = 0;
+                    }
+                    // top crop factor
+                    else if(i < topCrop*grayImage.width){
+                        pix[i] = 0;
+                    }
+                    // left crop factor
+                    else if(i % grayImage.width < leftCrop){
+                        pix[i] = 0;
+                    }
+                    // right crop factor
+                    else if(i % grayImage.width > kinect.width - rightCrop){
+                        pix[i] = 0;
+                    }
+                    else{
+                      pix[i] = 255;
+                    }
+                    
                 } else {
                     pix[i] = 0;
                 }
@@ -134,6 +169,19 @@ void ofApp::update(){
         // also, find holes is set to true so we will get interior contours as well....
         // findContours(grayImage, minArea, maxArea, nConsidered, findHoles
         contourFinder.findContours(grayImage, blobMinSize, blobMaxSize, maxBlobs, false);
+        
+        // go through blobs and send message, can be compartmentalized elsewhere
+        for(int i = 0; i < contourFinder.nBlobs; i++){
+            ofxCvBlob blob = contourFinder.blobs.at(i);
+            int rawX = blob.centroid.x;
+            int rawY = blob.centroid.y;
+            // possible dumb method for calculating use the below
+            // and then do a proportional scale to predetermined thing
+            double tanMath = tan(0.4066176);
+            
+            // do calculations for each
+            // make and send OSC signal?
+        }
     }
     
     kinect2.update();
@@ -158,7 +206,25 @@ void ofApp::update(){
             int numPixels = grayImage2.getWidth() * grayImage2.getHeight();
             for(int i = 0; i < numPixels; i++) {
                 if(pix[i] < nearThreshold2 && pix[i] > farThreshold2) {
-                    pix[i] = 255;
+                    // bottom crop factor
+                    if(i > (kinect2.height - botCrop2)*grayImage2.width){
+                        pix[i] = 0;
+                    }
+                    // top crop factor
+                    else if(i < topCrop2*grayImage2.width){
+                        pix[i] = 0;
+                    }
+                    // left crop factor
+                    else if(i % grayImage2.width < leftCrop2){
+                        pix[i] = 0;
+                    }
+                    // right crop factor
+                    else if(i % grayImage2.width > kinect2.width - rightCrop2){
+                        pix[i] = 0;
+                    }
+                    else{
+                        pix[i] = 255;
+                    }
                 } else {
                     pix[i] = 0;
                 }
@@ -171,6 +237,9 @@ void ofApp::update(){
         // find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
         // also, find holes is set to true so we will get interior contours as well....
         contourFinder2.findContours(grayImage2, blobMinSize2, blobMaxSize2, maxBlobs2, false);
+        
+        // do the same as first kinect to calculate x and y position then send,
+        // but possibly functionalize everything later
     }
 }
 
@@ -221,13 +290,16 @@ void ofApp::draw() {
     << "set far threshold " << farThreshold << " (press: < >) num blobs found " << contourFinder.nBlobs
     << ", fps: " << ofGetFrameRate() << endl
     << "press c to close the connection and o to open it again, connection is: " << kinect.isConnected() << endl;
+    // cropping stats
+    reportStream << "top, bottom, left, and right crop for 640x480: " << ofToString(topCrop) << ", "
+    << ofToString(botCrop) << ", " << ofToString(leftCrop) << ", " << ofToString(rightCrop) << endl;
     
     if(kinect.hasCamTiltControl()) {
         reportStream << "press UP and DOWN to change the tilt angle: " << angle << " degrees" << endl
         << "press 1-5 & 0 to change the led mode" << endl;
     }
     
-    
+    // blob stats
     reportStream << "BLOB numbers" << endl;
     
     for(int i = 0; i < contourFinder.nBlobs; i++){
@@ -255,8 +327,12 @@ void ofApp::draw() {
     << "using opencv threshold = " << bThreshWithOpenCV2 <<" (press spacebar)" << endl
     << "set near threshold " << nearThreshold2 << " (press: + -)" << endl
     << "set far threshold " << farThreshold2 << " (press: < >) num blobs found " << contourFinder2.nBlobs
-    << ", fps: " << ofGetFrameRate() << endl
-    << "press c to close the connection and o to open it again, connection is: " << kinect2.isConnected() << endl;
+    << endl;
+    
+    // cropping stats
+    reportStream << "top, bottom, left, and right crop for 640x480: " << ofToString(topCrop2) << ", "
+    << ofToString(botCrop2) << ", " << ofToString(leftCrop2) << ", " << ofToString(rightCrop2) << endl;
+    
     
     if(kinect2.hasCamTiltControl()) {
         reportStream << "press UP and DOWN to change the tilt angle: " << angle2 << " degrees" << endl
@@ -456,7 +532,98 @@ void ofApp::keyPressed (int key) {
                 kinect2.setLed(ofxKinect::LED_OFF);
             }
             break;
+        
+        // crop variables
             
+        // top crop
+        // lower top
+        case 't':
+            if(currentKinect == 0){
+                topCrop--;
+                if(topCrop < 0) topCrop = 0;
+            }
+            else{
+                topCrop2--;
+                if(topCrop2 < 0) topCrop2 = 0;
+            }
+            break;
+        
+        case 'g':
+            if(currentKinect == 0){
+                topCrop++;
+            }
+            else{
+                topCrop2++;
+            }
+            break;
+        
+        // bottom crop
+        // raise bottom crop
+        case 'y':
+            if(currentKinect == 0){
+                botCrop++;
+            }
+            else{
+                botCrop2++;
+            }
+            break;
+        // lower bottom crop
+        case 'h':
+            if(currentKinect == 0){
+                botCrop--;
+                if(botCrop < 0) botCrop = 0;
+            }
+            else{
+                botCrop2--;
+                if(botCrop2 < 0) botCrop2 = 0;
+            }
+            break;
+        
+        // left crop
+        // decrease left crop
+        case 'u':
+            if(currentKinect == 0){
+                leftCrop--;
+                if(leftCrop < 0) leftCrop = 0;
+            }
+            else{
+                leftCrop2--;
+                if(leftCrop2 < 0) leftCrop2 = 0;
+            }
+            break;
+        // increase left crop
+        case 'i':
+            if(currentKinect == 0){
+                leftCrop++;
+            }
+            else{
+                leftCrop2++;
+            }
+            break;
+        
+        // right crop
+        // increase right crop
+        case 'j':
+            if(currentKinect == 0){
+                rightCrop++;
+            }
+            else{
+                rightCrop2++;
+            }
+            break;
+        // decrease right crop
+        case 'k':
+            if(currentKinect == 0){
+                rightCrop--;
+                if(rightCrop--) rightCrop = 0;
+            }
+            else{
+                rightCrop2--;
+                if(rightCrop2--) rightCrop2 = 0;
+            }
+            break;
+            
+        // change kinect angle
         case OF_KEY_UP:
             if(currentKinect == 0){
                 angle++;
@@ -483,6 +650,7 @@ void ofApp::keyPressed (int key) {
             }
             break;
             
+        // change current Kinect being adjusted
         case OF_KEY_LEFT:
             currentKinect--;
             if(currentKinect<0) currentKinect=0;
@@ -492,6 +660,11 @@ void ofApp::keyPressed (int key) {
         case OF_KEY_RIGHT:
             currentKinect++;
             if(currentKinect >= nKinects) currentKinect=nKinects-1;
+            break;
+            
+        case 's':
+            // save variables here
+            saveParameters(currentKinect);
             break;
     }
 }
@@ -536,16 +709,27 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 }
 
+
+// load variables
 void ofApp::loadParameters(int loadFor){
     
     
 }
 
-int ofApp::findRealXPos(){
-   
+// save variables
+void ofApp::saveParameters(int saveFor){
     
 }
 
-int ofApp::findRealYPos(){
+// calculating real positions to send
+int ofApp::findRealXPos(){
+    int sendX = 0;
     
+    return sendX;
+}
+
+// calculating real positions to send
+int ofApp::findRealYPos(){
+    int sendY = 0;
+    return sendY;
 }

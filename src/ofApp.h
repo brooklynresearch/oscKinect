@@ -24,6 +24,7 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
         void loadParameters(int loadFor);
+        void saveParameters(int saveFor);
         int findRealXPos();
         int findRealYPos();
     
