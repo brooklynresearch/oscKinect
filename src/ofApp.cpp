@@ -42,13 +42,13 @@ void ofApp::setup(){
     grayThreshNear.allocate(kinect.width, kinect.height);
     grayThreshFar.allocate(kinect.width, kinect.height);
     
-    nearThreshold = 230;
+    nearThreshold = 180;
     farThreshold = 70;
     bThreshWithOpenCV = true;
     
-    blobMinSize = 20;
-    blobMaxSize = 3000;
-    maxBlobs = 5;
+    blobMinSize = 400;
+    blobMaxSize = 8000;
+    maxBlobs = 2;
     
     // zero the tilt on startup
     angle = 0;
@@ -74,12 +74,12 @@ void ofApp::setup(){
     grayThreshNear2.allocate(kinect2.width, kinect2.height);
     grayThreshFar2.allocate(kinect2.width, kinect2.height);
     
-    nearThreshold2 = 230;
+    nearThreshold2 = 180;
     farThreshold2 = 70;
     bThreshWithOpenCV2 = true;
     
-    blobMinSize2 = 20;
-    blobMaxSize2 = 3000;
+    blobMinSize2 = 400;
+    blobMaxSize2 = 8000;
     maxBlobs2 = 5;
     
     // zero the tilt on startup
@@ -132,7 +132,8 @@ void ofApp::update(){
         
         // find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
         // also, find holes is set to true so we will get interior contours as well....
-        contourFinder.findContours(grayImage, maxBlobs, blobMaxSize, blobMinSize, false);
+        // findContours(grayImage, minArea, maxArea, nConsidered, findHoles
+        contourFinder.findContours(grayImage, blobMinSize, blobMaxSize, maxBlobs, false);
     }
     
     kinect2.update();
@@ -169,7 +170,7 @@ void ofApp::update(){
         
         // find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
         // also, find holes is set to true so we will get interior contours as well....
-        contourFinder2.findContours(grayImage2, maxBlobs2, blobMaxSize2, blobMinSize2, false);
+        contourFinder2.findContours(grayImage2, blobMinSize2, blobMaxSize2, maxBlobs2, false);
     }
 }
 
@@ -224,6 +225,20 @@ void ofApp::draw() {
     if(kinect.hasCamTiltControl()) {
         reportStream << "press UP and DOWN to change the tilt angle: " << angle << " degrees" << endl
         << "press 1-5 & 0 to change the led mode" << endl;
+    }
+    
+    
+    reportStream << "BLOB numbers" << endl;
+    
+    for(int i = 0; i < contourFinder.nBlobs; i++){
+        ofxCvBlob blob = contourFinder.blobs.at(i);
+        int rawX = blob.centroid.x;
+        int rawY = blob.centroid.y;
+        double tanMath = tan(0.4066176);
+        reportStream << "estimated raw x, y for blob " << ofToString(i) << ": " << ofToString(rawX) << " "
+            << ofToString(rawY) << " " << ofToString(tanMath) << " " << ofToString(kinect.width*kinect.height)
+            <<endl;
+        
     }
     
     // kinect 2
@@ -519,4 +534,18 @@ void ofApp::gotMessage(ofMessage msg){
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
+}
+
+void ofApp::loadParameters(int loadFor){
+    
+    
+}
+
+int ofApp::findRealXPos(){
+   
+    
+}
+
+int ofApp::findRealYPos(){
+    
 }

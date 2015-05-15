@@ -23,6 +23,9 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+        void loadParameters(int loadFor);
+        int findRealXPos();
+        int findRealYPos();
     
         ofxKinect kinect;
         ofxKinect kinect2;
@@ -49,6 +52,12 @@ class ofApp : public ofBaseApp{
         int blobMaxSize;
         int maxBlobs;
     
+        int topCrop;
+        int botCrop;
+        int leftCrop;
+        int rightCrop;
+        
+    
         int angle;
     
         // second Kinect stuff
@@ -69,6 +78,11 @@ class ofApp : public ofBaseApp{
         int blobMinSize2;
         int blobMaxSize2;
         int maxBlobs2;
+        
+        int topCrop2;
+        int botCrop2;
+        int leftCrop2;
+        int rightCrop2;
         
     
         int angle2;
