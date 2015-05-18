@@ -163,8 +163,11 @@ void ofApp::update(){
             
             // do calculations for each
             // make and send OSC signal?
+            float sendX = ofMap(rawX, 0, grayImage.width, 0, 9.25);
+            float sendY = ofMap(rawY, 0, grayImage.height, 0, 8);
             
-            sendOSCPosition(rawX, rawY);
+//            sendOSCPosition(rawX, rawY);
+            sendOSCPosition(sendX, sendY);
         }
     }
     
@@ -286,14 +289,15 @@ void ofApp::draw() {
     // blob stats
     reportStream << "BLOB numbers" << endl;
     
-    for(int i = 0; i < contourFinder.nBlobs; i++){
-        ofxCvBlob blob = contourFinder.blobs.at(i);
+    for(int i = 0; i < contourFinder2.nBlobs; i++){
+        ofxCvBlob blob = contourFinder2.blobs.at(i);
         int rawX = blob.centroid.x;
         int rawY = blob.centroid.y;
         double tanMath = tan(0.4066176);
+        float sendX = ofMap(rawX, 0, grayImage2.width, 0, 9.25);
+        float sendY = ofMap(rawY, 0, grayImage2.height, 0, 8);
         reportStream << "estimated raw x, y for blob " << ofToString(i) << ": " << ofToString(rawX) << " "
-            << ofToString(rawY) << " " << ofToString(tanMath) << " " << ofToString(kinect.width*kinect.height)
-            <<endl;
+            << ofToString(rawY) << " " << ofToString(sendX) << " " << ofToString(sendY) << endl;
         
     }
     
