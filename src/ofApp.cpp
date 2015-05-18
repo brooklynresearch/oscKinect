@@ -166,7 +166,9 @@ void ofApp::update(){
             float sendX = ofMap(rawX, 0, grayImage.width, 0, 9.25);
             float sendY = ofMap(rawY, 0, grayImage.height, 0, 8);
             
-//            sendOSCPosition(rawX, rawY);
+            sendX = findRealXPos(sendX, 0);
+            sendY = findRealYPos(sendY, 0);
+            
             sendOSCPosition(sendX, sendY);
         }
     }
@@ -227,6 +229,25 @@ void ofApp::update(){
         
         // do the same as first kinect to calculate x and y position then send,
         // but possibly functionalize everything later
+        
+        // go through blobs and send message, can be compartmentalized elsewhere
+        for(int i = 0; i < contourFinder2.nBlobs; i++){
+            ofxCvBlob blob = contourFinder2.blobs.at(i);
+            int rawX = blob.centroid.x;
+            int rawY = blob.centroid.y;
+            // possible dumb method for calculating use the below
+            // and then do a proportional scale to predetermined thing
+            double tanMath = tan(0.4066176);
+            
+            // do calculations for each
+            // make and send OSC signal?
+            float sendX = ofMap(rawX, 0, grayImage2.width, 0, 9.25);
+            float sendY = ofMap(rawY, 0, grayImage2.height, 0, 8);
+            
+            sendX = findRealXPos(sendX, 1);
+            sendY = findRealYPos(sendY, 1);
+            sendOSCPosition(sendX, sendY);
+        }
     }
 }
 
@@ -259,6 +280,8 @@ void ofApp::draw() {
     // draw instructions
     ofSetColor(255, 255, 255);
     stringstream reportStream;
+    stringstream blobReport;
+    stringstream blobReport2;
     
     reportStream << "Currently controlling Kinect: " << ofToString(currentKinect) << " out of: " << ofToString(nKinects) << endl;
     
@@ -287,16 +310,16 @@ void ofApp::draw() {
     }
     
     // blob stats
-    reportStream << "BLOB numbers" << endl;
+    blobReport << "BLOB numbers for Kinect 1" << endl;
     
-    for(int i = 0; i < contourFinder2.nBlobs; i++){
-        ofxCvBlob blob = contourFinder2.blobs.at(i);
+    for(int i = 0; i < contourFinder.nBlobs; i++){
+        ofxCvBlob blob = contourFinder.blobs.at(i);
         int rawX = blob.centroid.x;
         int rawY = blob.centroid.y;
         double tanMath = tan(0.4066176);
-        float sendX = ofMap(rawX, 0, grayImage2.width, 0, 9.25);
-        float sendY = ofMap(rawY, 0, grayImage2.height, 0, 8);
-        reportStream << "estimated raw x, y for blob " << ofToString(i) << ": " << ofToString(rawX) << " "
+        float sendX = ofMap(rawX, 0, grayImage.width, 0, 9.25);
+        float sendY = ofMap(rawY, 0, grayImage.height, 0, 8);
+        blobReport << "estimated raw x, y for blob " << ofToString(i) << ": " << ofToString(rawX) << " "
             << ofToString(rawY) << " " << ofToString(sendX) << " " << ofToString(sendY) << endl;
         
     }
@@ -327,8 +350,24 @@ void ofApp::draw() {
         << "press 1-5 & 0 to change the led mode" << endl;
     }
     
+    // blob stats
+    blobReport2 << "BLOB numbers for Kinect 2" << endl;
+    
+    for(int i = 0; i < contourFinder2.nBlobs; i++){
+        ofxCvBlob blob = contourFinder2.blobs.at(i);
+        int rawX = blob.centroid.x;
+        int rawY = blob.centroid.y;
+        double tanMath = tan(0.4066176);
+        float sendX = ofMap(rawX, 0, grayImage2.width, 0, 9.25);
+        float sendY = ofMap(rawY, 0, grayImage2.height, 0, 8);
+        blobReport2 << "estimated raw x, y for blob " << ofToString(i) << ": " << ofToString(rawX) << " "
+        << ofToString(rawY) << " " << ofToString(sendX) << " " << ofToString(sendY) << endl;
+        
+    }
     
     ofDrawBitmapString(reportStream.str(), 20, 652);
+    ofDrawBitmapString(blobReport.str(), 830, 10);
+    ofDrawBitmapString(blobReport2.str(), 830, 512);
     displayKinectParameters(20, 975);
     
 }
@@ -894,15 +933,30 @@ void ofApp::setKinectParameters(string &idName, string &value){
 }
 
 // calculating real positions to send
-int ofApp::findRealXPos(){
-    int sendX = 0;
+float ofApp::findRealXPos(float modX, int calcFor){
+    float sendX = 0;
+    
+    if(calcFor == 0){
+        sendX = modX*xMult + xAdd;
+    }
+    else{
+        sendX = modX*xMult2+ xAdd2;
+    }
     
     return sendX;
 }
 
 // calculating real positions to send
-int ofApp::findRealYPos(){
-    int sendY = 0;
+float ofApp::findRealYPos(float modY, int calcFor){
+    float sendY = 0;
+    
+    if(calcFor == 0){
+        sendY = modY*yMult + yAdd;
+    }
+    else{
+        sendY = modY*yMult2+ yAdd2;
+    }
+    
     return sendY;
 }
 

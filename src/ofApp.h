@@ -30,8 +30,8 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
         void loadParameters(int loadFor);
         void saveParameters(int saveFor);
-        int findRealXPos();
-        int findRealYPos();
+        float findRealXPos(float modX, int calcFor);
+        float findRealYPos(float modY, int calcFor);
         void sendOSCPosition(float xPos, float yPos);
         void setKinectParameters(string &idName, string &value);
         void displayKinectParameters(int xPos, int yPos);
