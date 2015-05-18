@@ -3,6 +3,11 @@
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
+#include "ofxOsc.h"
+
+#define HOST "localhost"
+#define PORT 12345
+#define NUM_PARAMS 17
 
 class ofApp : public ofBaseApp{
 
@@ -27,6 +32,9 @@ class ofApp : public ofBaseApp{
         void saveParameters(int saveFor);
         int findRealXPos();
         int findRealYPos();
+        void sendOSCPosition(float xPos, float yPos);
+        void setKinectParameters(string &idName, string &value);
+        void displayKinectParameters(int xPos, int yPos);
     
         ofxKinect kinect;
         ofxKinect kinect2;
@@ -42,6 +50,7 @@ class ofApp : public ofBaseApp{
         
         ofxCvContourFinder contourFinder;
     
+        ofxOscSender sender;
     
         bool bThreshWithOpenCV;
         bool bDrawPointCloud;
@@ -84,11 +93,47 @@ class ofApp : public ofBaseApp{
         int botCrop2;
         int leftCrop2;
         int rightCrop2;
+    
+        int xAdd;
+        int yAdd;
+        int xMult;
+        int yMult;
         
+        int xAdd2;
+        int yAdd2;
+        int xMult2;
+        int yMult2;
     
         int angle2;
-        
     
+        ofXml XML;
+    
+    
+        /*
+        string kinect0Params[14][2] = {{"XLEFT","0"},{"XRIGHT","640"},{"YTOP","0"},{"YBOT","480"},{"NEAR","0"},{"FAR","200"},{"SERIAL","123"},{"MINSIZE","20"},{"MAXSIZE","2000"},{"BLOBNUM","5"},{"XMULT","1"},{"YMULT","1"},{"XADD","0"},{"YADD","0"}};
+        string kinect1Params[14][2] = {{"XLEFT","0"},{"XRIGHT","640"},{"YTOP","0"},{"YBOT","480"},{"NEAR","0"},{"FAR","200"},{"SERIAL","123"},{"MINSIZE","20"},{"MAXSIZE","2000"},{"BLOBNUM","5"},{"XMULT","1"},{"YMULT","1"},{"XADD","0"},{"YADD","0"}};
+    
+    
+        enum parameterNum{
+            XLEFT,
+            XRIGHT,
+            YTOP,
+            YBOT,
+            NEAR,
+            FAR,
+            SERIAL,
+            MINSIZE,
+            MAXSIZE,
+            BLOBNUM,
+            XMULT,
+            YMULT,
+            XADD,
+            YADD,
+            MAX_PARAMS
+        };
+    
+        string xmlStructure;
+        */
     
         // used for viewing the point cloud
         ofEasyCam easyCam;

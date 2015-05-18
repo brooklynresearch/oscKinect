@@ -3,11 +3,13 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetLogLevel(OF_LOG_VERBOSE);
+    sender.setup(HOST, PORT);
     
     currentKinect = 0;
     // number of Kinect devices; used to create array
     nKinects = ofxKinect::numTotalDevices();
     ofxKinect::listDevices();
+    
     
 //    kinects = new ofxKinect*[nKinects];
 //    // number of kinect objects to instantiate
@@ -42,24 +44,18 @@ void ofApp::setup(){
     grayThreshNear.allocate(kinect.width, kinect.height);
     grayThreshFar.allocate(kinect.width, kinect.height);
     
-    nearThreshold = 180;
-    farThreshold = 70;
+
     bThreshWithOpenCV = false;
     
-    blobMinSize = 400;
-    blobMaxSize = 8000;
-    maxBlobs = 2;
     
-    botCrop = 120;
-    topCrop = 120;
-    leftCrop = 100;
-    rightCrop = 200;
-    
-    // zero the tilt on startup
-    angle = 0;
-    
+    if( XML.load("settings.xml") ){
+        cout << "WE GOT IT" << endl;
+    } else {
+        cout << "WE DONT GOT IT" <<endl;
+    }
     // load up parameters for first kinect
     loadParameters(0);
+    
     kinect.setCameraTiltAngle(angle);
     
     // start from the front
@@ -82,24 +78,10 @@ void ofApp::setup(){
     grayThreshNear2.allocate(kinect2.width, kinect2.height);
     grayThreshFar2.allocate(kinect2.width, kinect2.height);
     
-    nearThreshold2 = 180;
-    farThreshold2 = 70;
+
     bThreshWithOpenCV2 = false;
     
-    blobMinSize2 = 400;
-    blobMaxSize2 = 8000;
-    maxBlobs2 = 5;
-    
-    botCrop2 = 120;
-    topCrop2 = 120;
-    leftCrop2 = 100;
-    rightCrop2 = 200;
-    
-    // zero the tilt on startup
-    angle2 = 0;
-    
     // load up parameters for second kinect
-    loadParameters(1);
     kinect2.setCameraTiltAngle(angle2);
     
     // start from the front
@@ -181,6 +163,8 @@ void ofApp::update(){
             
             // do calculations for each
             // make and send OSC signal?
+            
+            sendOSCPosition(rawX, rawY);
         }
     }
     
@@ -341,6 +325,7 @@ void ofApp::draw() {
     
     
     ofDrawBitmapString(reportStream.str(), 20, 652);
+    displayKinectParameters(20, 975);
     
 }
 
@@ -428,10 +413,12 @@ void ofApp::keyPressed (int key) {
             if(currentKinect == 0){
                 nearThreshold ++;
                 if (nearThreshold > 255) nearThreshold = 255;
+                //kinect0Params[NEAR][1] = nearThreshold;
             }
             else{
                 nearThreshold2 ++;
                 if (nearThreshold2 > 255) nearThreshold2 = 255;
+                //kinect1Params[NEAR][1] = nearThreshold2;
             }
             
             break;
@@ -664,7 +651,8 @@ void ofApp::keyPressed (int key) {
             
         case 's':
             // save variables here
-            saveParameters(currentKinect);
+            //saveParameters(currentKinect);
+            saveParameters(0);
             break;
     }
 }
@@ -712,13 +700,193 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 // load variables
 void ofApp::loadParameters(int loadFor){
+
     
-    
+        XML.setTo("KINECT[" + ofToString(loadFor) + "]");
+          
+        if(XML.exists("XLEFT")) {
+            leftCrop	= XML.getValue<int>("XLEFT");
+        } else {
+            leftCrop = 0;
+        }
+        if(XML.exists("XRIGHT")) {
+            rightCrop	= XML.getValue<int>("XRIGHT");
+        } else {
+            rightCrop = kinect.width;
+        }
+        if(XML.exists("YTOP")) {
+            topCrop	= XML.getValue<int>("YTOP");
+        } else {
+            topCrop = 0;
+        }
+        if(XML.exists("YBOT")) {
+            botCrop	= XML.getValue<int>("YBOT");
+        } else {
+            botCrop = kinect.height;
+        }
+        if(XML.exists("NEAR")) {
+            nearThreshold	= XML.getValue<int>("NEAR");
+        } else {
+            nearThreshold = 0;
+        }
+        if(XML.exists("FAR")) {
+            farThreshold	= XML.getValue<int>("FAR");
+        } else {
+            farThreshold = 200;
+        }
+        if(XML.exists("MINSIZE")) {
+            blobMinSize	= XML.getValue<int>("MINSIZE");
+        } else {
+            blobMinSize = 20;
+        }
+        if(XML.exists("MAXSIZE")) {
+            blobMaxSize	= XML.getValue<int>("MAXSIZE");
+        } else {
+            blobMaxSize = 20000;
+        }
+        if(XML.exists("BLOBNUM")) {
+            maxBlobs = XML.getValue<int>("BLOBNUM");
+        } else {
+            maxBlobs = 5;
+        }
+        if(XML.exists("XMULT")) {
+            xMult	= XML.getValue<int>("XMULT");
+        } else {
+            xMult = 1;
+        }
+        if(XML.exists("YMULT")) {
+            yMult	= XML.getValue<int>("YMULT");
+        } else {
+            yMult = 1;
+        }
+        if(XML.exists("XADD")) {
+            xAdd	= XML.getValue<int>("XADD");
+        } else {
+            xAdd = 0;
+        }
+        if(XML.exists("YADD")) {
+            yAdd	= XML.getValue<int>("YADD");
+        } else {
+            yAdd = 0;
+        }
+        if(XML.exists("ANGLE")) {
+            angle	= XML.getValue<int>("ANGLE");
+        } else {
+            angle = 0;
+        }
+        if(XML.exists("XLEFT2")) {
+            leftCrop2	= XML.getValue<int>("XLEFT2");
+        } else {
+            leftCrop2 = 0;
+        }
+        if(XML.exists("XRIGHT2")) {
+            rightCrop2	= XML.getValue<int>("XRIGHT2");
+        } else {
+            rightCrop2 = kinect.width;
+        }
+        if(XML.exists("YTOP2")) {
+            topCrop2	= XML.getValue<int>("YTOP2");
+        } else {
+            topCrop2 = 0;
+        }
+        if(XML.exists("YBOT2")) {
+            botCrop2	= XML.getValue<int>("YBOT2");
+        } else {
+            botCrop2 = kinect.height;
+        }
+        if(XML.exists("NEAR2")) {
+            nearThreshold2	= XML.getValue<int>("NEAR2");
+        } else {
+            nearThreshold2 = 0;
+        }
+        if(XML.exists("FAR2")) {
+            farThreshold2	= XML.getValue<int>("FAR2");
+        } else {
+            farThreshold2 = 200;
+        }
+        if(XML.exists("MINSIZE2")) {
+            blobMinSize2	= XML.getValue<int>("MINSIZE2");
+        } else {
+            blobMinSize2 = 20;
+        }
+        if(XML.exists("MAXSIZE2")) {
+            blobMaxSize2	= XML.getValue<int>("MAXSIZE2");
+        } else {
+            blobMaxSize2 = 20000;
+        }
+        if(XML.exists("BLOBNUM2")) {
+            maxBlobs2 = XML.getValue<int>("BLOBNUM2");
+        } else {
+            maxBlobs2 = 5;
+        }
+        if(XML.exists("XMULT2")) {
+            xMult2	= XML.getValue<int>("XMULT2");
+        } else {
+            xMult2 = 1;
+        }
+        if(XML.exists("YMULT2")) {
+            yMult2	= XML.getValue<int>("YMULT2");
+        } else {
+            yMult2 = 1;
+        }
+        if(XML.exists("XADD2")) {
+            xAdd2	= XML.getValue<int>("XADD2");
+        } else {
+            xAdd2 = 0;
+        }
+        if(XML.exists("YADD2")) {
+            yAdd2	= XML.getValue<int>("YADD2");
+        } else {
+            yAdd2 = 0;
+        }
+        if(XML.exists("ANGLE2")) {
+            angle2	= XML.getValue<int>("ANGLE2");
+        } else {
+            angle2 = 0;
+        }
 }
 
 // save variables
 void ofApp::saveParameters(int saveFor){
+    XML.clear();
+    XML.addChild("PARAMS");
+    XML.setTo("//PARAMS");
+    XML.addChild("KINECT");
+    XML.setTo("//KINECT");
+    XML.addValue("XLEFT",ofToString(leftCrop));
+    XML.addValue("XRIGHT",ofToString(rightCrop));
+    XML.addValue("YTOP", ofToString(topCrop));
+    XML.addValue("YBOT", ofToString(botCrop));
+    XML.addValue("NEAR", ofToString(nearThreshold));
+    XML.addValue("FAR", ofToString(farThreshold));
+    XML.addValue("MINSIZE", ofToString(blobMinSize));
+    XML.addValue("MAXSIZE", ofToString(blobMaxSize));
+    XML.addValue("BLOBNUM", ofToString(maxBlobs));
+    XML.addValue("XMULT", ofToString(xMult));
+    XML.addValue("YMULT", ofToString(yMult));
+    XML.addValue("XADD", ofToString(xAdd));
+    XML.addValue("YADD", ofToString(yAdd));
+    XML.addValue("ANGLE", ofToString(angle));
+    XML.addValue("XLEFT2",ofToString(leftCrop2));
+    XML.addValue("XRIGHT2",ofToString(rightCrop2));
+    XML.addValue("YTOP2", ofToString(topCrop2));
+    XML.addValue("YBOT2", ofToString(botCrop2));
+    XML.addValue("NEAR2", ofToString(nearThreshold2));
+    XML.addValue("FAR2", ofToString(farThreshold2));
+    XML.addValue("MINSIZE2", ofToString(blobMinSize2));
+    XML.addValue("MAXSIZE2", ofToString(blobMaxSize2));
+    XML.addValue("BLOBNUM2", ofToString(maxBlobs2));
+    XML.addValue("XMULT2", ofToString(xMult2));
+    XML.addValue("YMULT2", ofToString(yMult2));
+    XML.addValue("XADD2", ofToString(xAdd2));
+    XML.addValue("YADD2", ofToString(yAdd2));
+    XML.addValue("ANGLE2", ofToString(angle2));
     
+    XML.save("settings.xml");
+}
+
+void ofApp::setKinectParameters(string &idName, string &value){
+    XML.setValue(idName, value);
 }
 
 // calculating real positions to send
@@ -732,4 +900,29 @@ int ofApp::findRealXPos(){
 int ofApp::findRealYPos(){
     int sendY = 0;
     return sendY;
+}
+
+// sending x and y OSC positions.
+void ofApp::sendOSCPosition(float xPos, float yPos){
+    ofxOscMessage m;
+    m.setAddress("/Blob/Pos");
+    m.addFloatArg(xPos);
+    m.addFloatArg(yPos);
+    sender.sendMessage(m);
+}
+
+void ofApp::displayKinectParameters(int xPos, int yPos){
+    stringstream kinectParamStream0;
+    stringstream kinectParamStream1;
+    kinectParamStream0 << "ID: " << "0" << "   Serial #: " << kinect.getSerial() << endl;
+    kinectParamStream0 << "Left: " << ofToString(leftCrop) << "   Right: " << ofToString(rightCrop) << "   Top: " << ofToString(topCrop) << "   Bottom: " << ofToString(botCrop) << "   Near: " << ofToString(nearThreshold) << "   Far: " << ofToString(farThreshold) << endl;
+    kinectParamStream0 << "Min Blob Size: " << ofToString(blobMinSize) << "   Max Blob Size: " << ofToString(blobMaxSize) << "   Max Number of Blobs: " << ofToString(maxBlobs) << endl;
+    kinectParamStream0 << "X Multiplier: " << ofToString(xMult) << "   Y Multiplier: " << ofToString(yMult) << "   X Addition: " << ofToString(xAdd) << "   Y Addition " << ofToString(yAdd) << endl;
+    ofDrawBitmapString(kinectParamStream0.str(), xPos , yPos);
+    
+    kinectParamStream1 << "ID: " << "1" << "   Serial #: " << kinect2.getSerial() << endl;
+    kinectParamStream1 << "Left: " << ofToString(leftCrop2) << "   Right: " << ofToString(rightCrop2) << "   Top: " << ofToString(topCrop2) << "   Bottom: " << ofToString(botCrop2) << "   Near: " << ofToString(nearThreshold2) << "   Far: " << ofToString(farThreshold2) << endl;
+    kinectParamStream1 << "Min Blob Size: " << ofToString(blobMinSize2) << "   Max Blob Size: " << ofToString(blobMaxSize2) << "   Max Number of Blobs: " << ofToString(maxBlobs2) << endl;
+    kinectParamStream1 << "X Multiplier: " << ofToString(xMult2) << "   Y Multiplier: " << ofToString(yMult2) << "   X Addition: " << ofToString(xAdd2) << "   Y Addition " << ofToString(yAdd2) << endl;
+    ofDrawBitmapString(kinectParamStream1.str(), (xPos + 600) , yPos);
 }
