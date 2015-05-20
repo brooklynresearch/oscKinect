@@ -37,6 +37,11 @@ class ofApp : public ofBaseApp{
         void setKinectParameters(string &idName, string &value);
         void displayKinectParameters(int xPos, int yPos);
     
+        string HOSTIP;
+        int PORTNUM;
+        string kinectID;
+        string kinectID2;
+    
         ofxKinect kinect;
         ofxKinect kinect2;
         ofxKinect** kinects;

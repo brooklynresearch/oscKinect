@@ -3,7 +3,15 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetLogLevel(OF_LOG_VERBOSE);
-    sender.setup(HOST, PORT);
+    
+    if( XML.load("settings.xml") ){
+        cout << "WE GOT IT" << endl;
+    } else {
+        cout << "WE DONT GOT IT" <<endl;
+    }
+    // load up parameters
+    loadParameters(0);
+    sender.setup(HOSTIP, PORTNUM);
     
     currentKinect = 0;
     // number of Kinect devices; used to create array
@@ -25,7 +33,8 @@ void ofApp::setup(){
     
 //    kinect.init();
     //kinect.init(true); // shows infrared instead of RGB video image
-    kinect.init(false, false); // disable video image (faster fps)      
+    kinect.init(false, false); // disable video image (faster fps)
+//    kinect.open(kinectID);
     kinect.open();		// opens first available kinect
     //kinect.open(1);	// open a kinect by id, starting with 0 (sorted by serial # lexicographically))
     //kinect.open("A00362A08602047A");	// open a kinect using it's unique serial #
@@ -48,14 +57,6 @@ void ofApp::setup(){
     bThreshWithOpenCV = false;
     
     
-    if( XML.load("settings.xml") ){
-        cout << "WE GOT IT" << endl;
-    } else {
-        cout << "WE DONT GOT IT" <<endl;
-    }
-    // load up parameters for first kinect
-    loadParameters(0);
-    
     kinect.setCameraTiltAngle(angle);
     
     // start from the front
@@ -65,6 +66,7 @@ void ofApp::setup(){
     // second kinect
     kinect2.init(false, false);
     kinect2.open();
+//    kinect2.open(kinectID2);
     
     // print the intrinsic IR sensor values
     if(kinect2.isConnected()) {        ofLogNotice() << "sensor-emitter dist: " << kinect.getSensorEmitterDistance() << "cm";
@@ -747,7 +749,27 @@ void ofApp::loadParameters(int loadFor){
 
     
         XML.setTo("KINECT[" + ofToString(loadFor) + "]");
-          
+    
+    if(XML.exists("HOSTIP")) {
+        HOSTIP	= XML.getValue<string>("HOSTIP");
+    } else {
+        HOSTIP = "localhost";
+    }
+    if(XML.exists("PORTNUM")) {
+        PORTNUM	= XML.getValue<int>("PORTNUM");
+    } else {
+        PORTNUM = 12345;
+    }
+    if(XML.exists("KINECTID")) {
+        kinectID	= XML.getValue<string>("KINECTID");
+    } else {
+        kinectID = 	ofxKinect::nextAvailableSerial();
+    }
+    if(XML.exists("KINECTID2")) {
+        kinectID2	= XML.getValue<string>("KINECTID2");
+    } else {
+        kinectID2 = ofxKinect::nextAvailableSerial();
+    }
         if(XML.exists("XLEFT")) {
             leftCrop	= XML.getValue<int>("XLEFT");
         } else {
@@ -794,22 +816,22 @@ void ofApp::loadParameters(int loadFor){
             maxBlobs = 5;
         }
         if(XML.exists("XMULT")) {
-            xMult	= XML.getValue<int>("XMULT");
+            xMult	= XML.getValue<float>("XMULT");
         } else {
             xMult = 1;
         }
         if(XML.exists("YMULT")) {
-            yMult	= XML.getValue<int>("YMULT");
+            yMult	= XML.getValue<float>("YMULT");
         } else {
             yMult = 1;
         }
         if(XML.exists("XADD")) {
-            xAdd	= XML.getValue<int>("XADD");
+            xAdd	= XML.getValue<float>("XADD");
         } else {
             xAdd = 0;
         }
         if(XML.exists("YADD")) {
-            yAdd	= XML.getValue<int>("YADD");
+            yAdd	= XML.getValue<float>("YADD");
         } else {
             yAdd = 0;
         }
@@ -864,22 +886,22 @@ void ofApp::loadParameters(int loadFor){
             maxBlobs2 = 5;
         }
         if(XML.exists("XMULT2")) {
-            xMult2	= XML.getValue<int>("XMULT2");
+            xMult2	= XML.getValue<float>("XMULT2");
         } else {
             xMult2 = 1;
         }
         if(XML.exists("YMULT2")) {
-            yMult2	= XML.getValue<int>("YMULT2");
+            yMult2	= XML.getValue<float>("YMULT2");
         } else {
             yMult2 = 1;
         }
         if(XML.exists("XADD2")) {
-            xAdd2	= XML.getValue<int>("XADD2");
+            xAdd2	= XML.getValue<float>("XADD2");
         } else {
             xAdd2 = 0;
         }
         if(XML.exists("YADD2")) {
-            yAdd2	= XML.getValue<int>("YADD2");
+            yAdd2	= XML.getValue<float>("YADD2");
         } else {
             yAdd2 = 0;
         }
@@ -897,6 +919,10 @@ void ofApp::saveParameters(int saveFor){
     XML.setTo("//PARAMS");
     XML.addChild("KINECT");
     XML.setTo("//KINECT");
+    XML.addValue("HOSTIP",HOSTIP);
+    XML.addValue("PORTNUM",ofToString(PORTNUM));
+    XML.addValue("KINECTID",kinectID);
+    XML.addValue("KINECTID2",kinectID2);
     XML.addValue("XLEFT",ofToString(leftCrop));
     XML.addValue("XRIGHT",ofToString(rightCrop));
     XML.addValue("YTOP", ofToString(topCrop));
