@@ -6,6 +6,7 @@
 #include "ofxOsc.h"
 
 #define HOST "localhost"
+//#define HOST "192.168.0.126"
 #define PORT 12345
 #define NUM_PARAMS 17
 
@@ -66,7 +67,11 @@ class ofApp : public ofBaseApp{
         int botCrop;
         int leftCrop;
         int rightCrop;
-        
+    
+        float xAdd;
+        float yAdd;
+        float xMult;
+        float yMult;
     
         int angle;
     
@@ -93,16 +98,11 @@ class ofApp : public ofBaseApp{
         int botCrop2;
         int leftCrop2;
         int rightCrop2;
-    
-        int xAdd;
-        int yAdd;
-        int xMult;
-        int yMult;
         
-        int xAdd2;
-        int yAdd2;
-        int xMult2;
-        int yMult2;
+        float xAdd2;
+        float yAdd2;
+        float xMult2;
+        float yMult2;
     
         int angle2;
     

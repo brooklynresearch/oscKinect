@@ -87,7 +87,7 @@ void ofApp::setup(){
     // start from the front
     bDrawPointCloud2 = false;
     
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
 }
 
 //--------------------------------------------------------------
@@ -159,12 +159,13 @@ void ofApp::update(){
             int rawY = blob.centroid.y;
             // possible dumb method for calculating use the below
             // and then do a proportional scale to predetermined thing
-            double tanMath = tan(0.4066176);
+//            double tanMath = tan(0.4066176);
             
             // do calculations for each
             // make and send OSC signal?
-            float sendX = ofMap(rawX, 0, grayImage.width, 0, 9.25);
-            float sendY = ofMap(rawY, 0, grayImage.height, 0, 8);
+            // constrained to to 0 and 1.0 on all
+            float sendX = ofMap(rawX, 0, grayImage.width, 0, 1.0);
+            float sendY = ofMap(rawY, 0, grayImage.height, 0, 1.0);
             
             sendX = findRealXPos(sendX, 0);
             sendY = findRealYPos(sendY, 0);
@@ -237,12 +238,12 @@ void ofApp::update(){
             int rawY = blob.centroid.y;
             // possible dumb method for calculating use the below
             // and then do a proportional scale to predetermined thing
-            double tanMath = tan(0.4066176);
+//            double tanMath = tan(0.4066176);
             
             // do calculations for each
             // make and send OSC signal?
-            float sendX = ofMap(rawX, 0, grayImage2.width, 0, 9.25);
-            float sendY = ofMap(rawY, 0, grayImage2.height, 0, 8);
+            float sendX = ofMap(rawX, 0, grayImage2.width, 0, 1.0);
+            float sendY = ofMap(rawY, 0, grayImage2.height, 0, 1.0);
             
             sendX = findRealXPos(sendX, 1);
             sendY = findRealYPos(sendY, 1);
