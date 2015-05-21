@@ -33,7 +33,7 @@ class ofApp : public ofBaseApp{
         void saveParameters(int saveFor);
         float findRealXPos(float modX, int calcFor);
         float findRealYPos(float modY, int calcFor);
-        void sendOSCPosition(float xPos, float yPos);
+        void sendOSCPosition(int currentBlob, float xPos, float yPos);
         void setKinectParameters(string &idName, string &value);
         void displayKinectParameters(int xPos, int yPos);
     
@@ -41,6 +41,8 @@ class ofApp : public ofBaseApp{
         int PORTNUM;
         string kinectID;
         string kinectID2;
+        int sectorID;
+        int sectorID2;
     
         ofxKinect kinect;
         ofxKinect kinect2;

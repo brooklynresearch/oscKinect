@@ -167,12 +167,12 @@ void ofApp::update(){
             // make and send OSC signal?
             // constrained to to 0 and 1.0 on all
             float sendX = ofMap(rawX, 0, grayImage.width, 0, 1.0);
-            float sendY = ofMap(rawY, 0, grayImage.height, 0, 1.0);
+            float sendY = ofMap(rawY, 0, grayImage.height, 0.2*sectorID, 0.2*(sectorID+1));
             
             sendX = findRealXPos(sendX, 0);
             sendY = findRealYPos(sendY, 0);
             
-            sendOSCPosition(sendX, sendY);
+            sendOSCPosition(i, sendX, sendY);
         }
     }
     
@@ -245,11 +245,11 @@ void ofApp::update(){
             // do calculations for each
             // make and send OSC signal?
             float sendX = ofMap(rawX, 0, grayImage2.width, 0, 1.0);
-            float sendY = ofMap(rawY, 0, grayImage2.height, 0, 1.0);
+            float sendY = ofMap(rawY, 0, grayImage2.height, 0.2*sectorID2, 0.2*(sectorID2+1));
             
             sendX = findRealXPos(sendX, 1);
             sendY = findRealYPos(sendY, 1);
-            sendOSCPosition(sendX, sendY);
+            sendOSCPosition(i, sendX, sendY);
         }
     }
 }
@@ -321,7 +321,7 @@ void ofApp::draw() {
         int rawY = blob.centroid.y;
         double tanMath = tan(0.4066176);
         float sendX = ofMap(rawX, 0, grayImage.width, 0, 1.0);
-        float sendY = ofMap(rawY, 0, grayImage.height, 0, 1.0);
+        float sendY = ofMap(rawY, 0, grayImage.height,  0.2*sectorID, 0.2*(sectorID+1));
         blobReport << "estimated raw x, y for blob " << ofToString(i) << ": " << ofToString(rawX) << " "
             << ofToString(rawY) << " " << ofToString(sendX) << " " << ofToString(sendY) << endl;
         
@@ -362,7 +362,7 @@ void ofApp::draw() {
         int rawY = blob.centroid.y;
         double tanMath = tan(0.4066176);
         float sendX = ofMap(rawX, 0, grayImage2.width, 0, 1.0);
-        float sendY = ofMap(rawY, 0, grayImage2.height, 0, 1.0);
+        float sendY = ofMap(rawY, 0, grayImage2.height,  0.2*sectorID2, 0.2*(sectorID2+1));
         blobReport2 << "estimated raw x, y for blob " << ofToString(i) << ": " << ofToString(rawX) << " "
         << ofToString(rawY) << " " << ofToString(sendX) << " " << ofToString(sendY) << endl;
         
@@ -768,7 +768,17 @@ void ofApp::loadParameters(int loadFor){
     if(XML.exists("KINECTID2")) {
         kinectID2	= XML.getValue<string>("KINECTID2");
     } else {
-        kinectID2 = ofxKinect::nextAvailableSerial();
+        kinectID2 = ofxKinect::nextAvailableSerial()	;
+    }
+    if(XML.exists("SECTORID")) {
+        sectorID	= XML.getValue<int>("SECTORID");
+    } else {
+        sectorID = 0;
+    }
+    if(XML.exists("SECTORID2")) {
+        sectorID2	= XML.getValue<int>("SECTORID2");
+    } else {
+        sectorID2 = 1;
     }
         if(XML.exists("XLEFT")) {
             leftCrop	= XML.getValue<int>("XLEFT");
@@ -921,6 +931,8 @@ void ofApp::saveParameters(int saveFor){
     XML.setTo("//KINECT");
     XML.addValue("HOSTIP",HOSTIP);
     XML.addValue("PORTNUM",ofToString(PORTNUM));
+    XML.addValue("PORTNUM",ofToString(sectorID));
+    XML.addValue("PORTNUM",ofToString(sectorID2));
     XML.addValue("KINECTID",kinectID);
     XML.addValue("KINECTID2",kinectID2);
     XML.addValue("XLEFT",ofToString(leftCrop));
@@ -988,9 +1000,10 @@ float ofApp::findRealYPos(float modY, int calcFor){
 }
 
 // sending x and y OSC positions.
-void ofApp::sendOSCPosition(float xPos, float yPos){
+void ofApp::sendOSCPosition(int currentBlob, float xPos, float yPos){
     ofxOscMessage m;
     m.setAddress("/Blob/Pos");
+    m.addIntArg(currentBlob);
     m.addFloatArg(xPos);
     m.addFloatArg(yPos);
     sender.sendMessage(m);
