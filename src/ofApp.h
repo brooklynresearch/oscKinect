@@ -33,7 +33,7 @@ class ofApp : public ofBaseApp{
         void saveParameters(int saveFor);
         float findRealXPos(float modX, int calcFor);
         float findRealYPos(float modY, int calcFor);
-        void sendOSCPosition(int currentBlob, float xPos, float yPos);
+        void sendOSCPosition(int currentSector, int currentBlob, float xPos, float yPos);
         void setKinectParameters(string &idName, string &value);
         void displayKinectParameters(int xPos, int yPos);
     

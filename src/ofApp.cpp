@@ -172,7 +172,7 @@ void ofApp::update(){
             sendX = findRealXPos(sendX, 0);
             sendY = findRealYPos(sendY, 0);
             
-            sendOSCPosition(i, sendX, sendY);
+            sendOSCPosition(sectorID, i, sendX, sendY);
         }
     }
     
@@ -249,7 +249,7 @@ void ofApp::update(){
             
             sendX = findRealXPos(sendX, 1);
             sendY = findRealYPos(sendY, 1);
-            sendOSCPosition(i, sendX, sendY);
+            sendOSCPosition(sectorID2, i, sendX, sendY);
         }
     }
 }
@@ -1000,9 +1000,10 @@ float ofApp::findRealYPos(float modY, int calcFor){
 }
 
 // sending x and y OSC positions.
-void ofApp::sendOSCPosition(int currentBlob, float xPos, float yPos){
+void ofApp::sendOSCPosition(int currentSector, int currentBlob, float xPos, float yPos){
     ofxOscMessage m;
     m.setAddress("/Blob/Pos");
+    m.addIntArg(currentSector);
     m.addIntArg(currentBlob);
     m.addFloatArg(xPos);
     m.addFloatArg(yPos);
